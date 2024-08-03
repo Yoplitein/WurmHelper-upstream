@@ -1,7 +1,6 @@
 package net.ildar.wurm;
 
 import com.wurmonline.shared.util.MulticolorLineSegment;
-import net.ildar.wurm.bot.GuardBot;
 
 import java.util.*;
 import java.util.function.Function;
@@ -36,8 +35,6 @@ public class Chat {
             case ":Combat":
                 if (input instanceof List)
                     modifyCombatMessage((List<MulticolorLineSegment>) input);
-            case ":Event":
-                GuardBot.processEvent(message);
                 break;
         }
     }
