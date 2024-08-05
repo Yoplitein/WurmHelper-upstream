@@ -62,6 +62,11 @@ public class AssistantBot extends Bot {
     private boolean successfullDrinkingStart;
     private boolean successfullDrinking;
 
+    private boolean eating;
+    private long foodId;
+    private boolean successfullEatingStart;
+    private boolean successfullEating;
+
     private boolean trashCleaning;
     private long trashCleaningTimeout;
     private long lastTrashCleaning;
@@ -117,6 +122,7 @@ public class AssistantBot extends Bot {
     public AssistantBot() {
         registerInputHandler(AssistantBot.InputKey.w, input -> toggleDrinking(0));
         registerInputHandler(AssistantBot.InputKey.wid, this::toggleDrinkingByTargetId);
+        registerInputHandler(AssistantBot.InputKey.eat, input -> toggleEating());
         registerInputHandler(AssistantBot.InputKey.ls, input -> showSpellList());
         registerInputHandler(AssistantBot.InputKey.c, this::toggleAutocasting);
         registerInputHandler(AssistantBot.InputKey.p, input -> togglePraying(0));
@@ -229,6 +235,24 @@ public class AssistantBot extends Bot {
                         counter = 0;
                         while (drinking && !successfullDrinking && counter++ < 100) {
                             if (verbose) Utils.consolePrint("successfullDrinking counter=" + counter);
+                            sleep(2000);
+                        }
+                    }
+                }
+                if (eating) {
+                    float hunger = player.getHunger();
+                    if (hunger > 0.1) {
+                        successfullEating = false;
+                        successfullEatingStart = false;
+                        int counter = 0;
+                        while (eating && !successfullEatingStart && counter++ < 50) {
+                            if (verbose) Utils.consolePrint("successfullEatingStart counter=" + counter);
+                            WurmHelper.hud.sendAction(new PlayerAction("",(short) 182, PlayerAction.ANYTHING), foodId);
+                            sleep(500);
+                        }
+                        counter = 0;
+                        while (eating && !successfullEating && counter++ < 100) {
+                            if (verbose) Utils.consolePrint("successfullEating counter=" + counter);
                             sleep(2000);
                         }
                     }
@@ -511,6 +535,11 @@ public class AssistantBot extends Bot {
         registerEventProcessor(message -> message.contains("The water is refreshing and it cools you down")
                         || message.contains("You are so bloated you cannot bring yourself to drink any thing"),
                 () -> successfullDrinking = successfullDrinkingStart = true);
+        registerEventProcessor(message -> message.contains("you will start eating"),
+                () -> successfullEatingStart = true);
+        registerEventProcessor(message -> message.contains("You are so full, you cannot possibly eat anything else")
+                        || message.contains("You can't bring yourself to eat more right now"),
+                () -> successfullEating = successfullEatingStart = true);
         registerEventProcessor(message -> message.contains("You start to pick the lock")
                         || message.contains("you will start picking lock"),
                 () -> successfullStartOfLockpicking = true);
@@ -1005,6 +1034,24 @@ public class AssistantBot extends Bot {
         } else
             Utils.consolePrint("Drinking is off!");
     }
+
+    private void toggleEating() {
+        eating = !eating;
+        if (eating) {
+            int x = WurmHelper.hud.getWorld().getClient().getXMouse();
+            int y = WurmHelper.hud.getWorld().getClient().getYMouse();
+            long[] targets = WurmHelper.hud.getCommandTargetsFrom(x, y);
+            if (targets != null && targets.length > 0) {
+                foodId = targets[0];
+            } else {
+                eating = false;
+                Utils.consolePrint("Can't find the target food");
+                return;
+            }
+            Utils.consolePrint("Eating is on!");
+        } else
+            Utils.consolePrint("Eating is off!");
+    }
     
     private void toggleButchering() {
         butchering ^= true;
@@ -1253,6 +1300,7 @@ public class AssistantBot extends Bot {
     private enum InputKey implements Bot.InputKey {
         w("Toggle automatic drinking of the liquid the user pointing at", ""),
         wid("Toggle automatic drinking of liquid with provided id", "id"),
+        eat("Toggle automatic eating of food the user is pointing at", ""),
         ls("Show the list of available spells for autocasting", ""),
         c("Toggle automatic casts of spells(if player has enough favor). Provide an optional spell abbreviation to change the default Dispel spell. " +
                 "You can see the list of available spell with \"" + ls.name() + "\" key", "[spell_abbreviation]"),
