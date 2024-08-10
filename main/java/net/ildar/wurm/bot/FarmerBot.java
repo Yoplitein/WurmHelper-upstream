@@ -10,7 +10,6 @@ import com.wurmonline.shared.constants.PlayerAction;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,7 +51,7 @@ public class FarmerBot extends Bot {
         setTimeout(500);
         int maxActions = Utils.getMaxActionNumber();
         CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow, ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
         World world = WurmHelper.hud.getWorld();
         PlayerObj player = world.getPlayer();
         Set<String> cultivatedTiles = new HashSet<>(Arrays.asList(
@@ -61,8 +60,7 @@ public class FarmerBot extends Bot {
             waitOnPause();
             float stamina = player.getStamina();
             float damage = player.getDamage();
-            float progress = ReflectionUtil.getPrivateField(progressBar,
-                    ReflectionUtil.getField(progressBar.getClass(), "progress"));
+            float progress = Utils.getField(progressBar, "progress");
             if ((stamina + damage) > staminaThreshold && progress == 0f) {
                 int checkedtiles[][] = Utils.getAreaCoordinates();
                 int initiatedActions = 0;

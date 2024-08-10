@@ -6,7 +6,6 @@ import com.wurmonline.shared.constants.PlayerAction;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 @BotInfo(description =
         "Meditates on the carpet. Assumes that there are no restrictions on meditation skill.",
@@ -27,8 +26,7 @@ public class MeditationBot extends Bot {
 
     @Override
     protected void work() throws Exception{
-        PickableUnit pickableUnit = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+        PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
         if (pickableUnit == null || !pickableUnit.getHoverName().contains("meditation rug")) {
             Utils.consolePrint("Select a meditation rug!");
             deactivate();
@@ -40,8 +38,7 @@ public class MeditationBot extends Bot {
         setStaminaThreshold(0.5f);
         registerEventProcessors();
         CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow,
-                ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
         PlayerAction meditationAction = new PlayerAction("",(short) 384, PlayerAction.ANYTHING);
         while (isActive()) {
             waitOnPause();

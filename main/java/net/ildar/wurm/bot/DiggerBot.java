@@ -10,7 +10,6 @@ import net.ildar.wurm.Pair;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -90,7 +89,7 @@ public class DiggerBot extends Bot{
         setTimeout(500);
         clicks = Utils.getMaxActionNumber();
         CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow, ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
         registerEventProcessors();
         while (isActive()) {
             waitOnPause();
@@ -102,8 +101,7 @@ public class DiggerBot extends Bot{
             }
             float stamina = WurmHelper.hud.getWorld().getPlayer().getStamina();
             float damage = WurmHelper.hud.getWorld().getPlayer().getDamage();
-            float progress = ReflectionUtil.getPrivateField(progressBar,
-                    ReflectionUtil.getField(progressBar.getClass(), "progress"));
+            float progress = Utils.getField(progressBar, "progress");
             stopDiggingIfHeightIsLower(progressBar);
             if ((stamina + damage) > staminaThreshold && progress == 0f) {
                 switch (workMode) {
@@ -146,8 +144,7 @@ public class DiggerBot extends Bot{
                             finishLeveling();
                             break;
                         }
-                        PickableUnit pickableUnit = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                                ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+                        PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
                         if (pickableUnit != null && pickableUnit instanceof TilePicker) {
                             if (pickableUnit.getHoverName().contains("(flat)")) {
                                 finishLeveling();
@@ -228,8 +225,7 @@ public class DiggerBot extends Bot{
         if (surfaceMiningMode)
             actionKey = "mining";
         if (h <= diggingHeightLimit) {
-            String actionName = ReflectionUtil.getPrivateField(progressBar,
-                    ReflectionUtil.getField(progressBar.getClass(), "title"));
+            String actionName = Utils.getField(progressBar, "title");
             if (actionName != null && actionName.contains(actionKey))
                 WurmHelper.hud.sendAction(PlayerAction.STOP, 0);
         }

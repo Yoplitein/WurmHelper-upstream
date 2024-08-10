@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
-
 import com.wurmonline.client.comm.ServerConnectionListenerClass;
 import com.wurmonline.client.comm.SimpleServerConnectionClass;
 import com.wurmonline.client.game.PlayerObj;
@@ -493,14 +491,8 @@ public class AssistantBot extends Bot {
                     CreatureCellRenderable creature = null;
                     try
                     {
-                        TargetWindow window = ReflectionUtil.getPrivateField(
-                            WurmHelper.hud,
-                            ReflectionUtil.getField(WurmHelper.hud.getClass(), "targetWindow")
-                        );
-                        creature = ReflectionUtil.getPrivateField(
-                            window,
-                            ReflectionUtil.getField(window.getClass(), "creature")
-                        );
+                        TargetWindow window = Utils.getField(WurmHelper.hud, "targetWindow");
+                        creature = Utils.getField(window, "creature");
                     }
                     catch(Exception err)
                     {
@@ -822,8 +814,7 @@ public class AssistantBot extends Bot {
         if (trashCleaning) {
             if (trashBinId == 0) {
                 try {
-                    PickableUnit pickableUnit = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                            ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+                    PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
                     if (pickableUnit == null || !pickableUnit.getHoverName().contains("trash heap")) {
                         Utils.consolePrint("Select trash bin!");
                         trashCleaning = false;
@@ -856,8 +847,7 @@ public class AssistantBot extends Bot {
         if (casting) {
             try {
                 PaperDollInventory pdi = WurmHelper.hud.getPaperDollInventory();
-                PaperDollSlot pds = ReflectionUtil.getPrivateField(pdi,
-                        ReflectionUtil.getField(pdi.getClass(), "bodyItem"));
+                PaperDollSlot pds = Utils.getField(pdi, "bodyItem");
                 bodyId = pds.getItemId();
                 InventoryMetaItem statuette = Utils.locateToolItem("statuette of");
                 if (statuette == null) {
@@ -887,8 +877,7 @@ public class AssistantBot extends Bot {
         if (praying) {
             if (altarId == 0) {
                 try {
-                    PickableUnit pickableUnit = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                            ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+                    PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
                     if (pickableUnit == null || !pickableUnit.getHoverName().toLowerCase().contains("altar")) {
                         Utils.consolePrint("Select an altar!");
                         praying = false;
@@ -915,8 +904,7 @@ public class AssistantBot extends Bot {
         if (sacrificing) {
             if (altarId == 0) {
                 try {
-                    PickableUnit pickableUnit = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                            ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+                    PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
                     if (pickableUnit == null || !pickableUnit.getHoverName().contains("altar")) {
                         Utils.consolePrint("Select an altar!");
                         sacrificing = false;
@@ -943,8 +931,7 @@ public class AssistantBot extends Bot {
         if (kindlingBurning) {
             if (forgeId == 0) {
                 try {
-                    PickableUnit pickableUnit = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                            ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+                    PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
                     if (pickableUnit == null) {
                         Utils.consolePrint("Select a forge first!");
                         kindlingBurning = false;
@@ -972,8 +959,7 @@ public class AssistantBot extends Bot {
             casting = false;
             try {
                 PaperDollInventory pdi = WurmHelper.hud.getPaperDollInventory();
-                PaperDollSlot pds = ReflectionUtil.getPrivateField(pdi,
-                        ReflectionUtil.getField(pdi.getClass(), "bodyItem"));
+                PaperDollSlot pds = Utils.getField(pdi, "bodyItem");
                 bodyId = pds.getItemId();
                 InventoryMetaItem statuette = Utils.locateToolItem("statuette of");
                 if (statuette == null || bodyId == 0) {
@@ -1205,13 +1191,12 @@ public class AssistantBot extends Bot {
         List<GroundItemCellRenderable> items = new ArrayList<>();
         try {
             ServerConnectionListenerClass sscc = WurmHelper.hud.getWorld().getServerConnection().getServerConnectionListener();
-            Map<Long, GroundItemCellRenderable> groundItemsMap = ReflectionUtil.getPrivateField(sscc,
-                        ReflectionUtil.getField(sscc.getClass(), "groundItems"));
+            Map<Long, GroundItemCellRenderable> groundItemsMap = Utils.getField(sscc, "groundItems");
             
             for(GroundItemCellRenderable item: groundItemsMap.values()) {
                 GroundItemData data;
                 try {
-                    data = ReflectionUtil.getPrivateField(item, ReflectionUtil.getField(item.getClass(), "item"));
+                    data = Utils.getField(item, "item");
                 } catch (Exception e) {
                     Utils.consolePrint(e.toString());
                     continue;

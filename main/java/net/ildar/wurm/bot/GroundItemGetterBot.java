@@ -8,7 +8,6 @@ import com.wurmonline.shared.constants.PlayerAction;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.util.*;
 
@@ -30,15 +29,13 @@ public class GroundItemGetterBot extends Bot {
             waitOnPause();
             if (itemNames.size() > 0) {
                 ServerConnectionListenerClass sscc = WurmHelper.hud.getWorld().getServerConnection().getServerConnectionListener();
-                Map<Long, GroundItemCellRenderable> groundItems = ReflectionUtil.getPrivateField(sscc,
-                        ReflectionUtil.getField(sscc.getClass(), "groundItems"));
+                Map<Long, GroundItemCellRenderable> groundItems = Utils.getField(sscc, "groundItems");
                 float x = WurmHelper.hud.getWorld().getPlayerPosX();
                 float y = WurmHelper.hud.getWorld().getPlayerPosY();
                 if (groundItems.size() > 0)
                     try {
                         for (Map.Entry<Long, GroundItemCellRenderable> entry : groundItems.entrySet()) {
-                            GroundItemData groundItemData = ReflectionUtil.getPrivateField(entry.getValue(),
-                                    ReflectionUtil.getField(entry.getValue().getClass(), "item"));
+                            GroundItemData groundItemData = Utils.getField(entry.getValue(), "item");
                             float itemX = groundItemData.getX();
                             float itemY = groundItemData.getY();
                             if ((Math.sqrt(Math.pow(itemX - x, 2) + Math.pow(itemY - y, 2)) <= distance) && itemNames != null && itemNames.size() > 0)
@@ -58,10 +55,8 @@ public class GroundItemGetterBot extends Bot {
         try {
             float x = WurmHelper.hud.getWorld().getPlayerPosX();
             float y = WurmHelper.hud.getWorld().getPlayerPosY();
-            float itemX = ReflectionUtil.getPrivateField(staticModelRenderable,
-                    ReflectionUtil.getField(StaticModelRenderable.class, "x"));
-            float itemY = ReflectionUtil.getPrivateField(staticModelRenderable,
-                    ReflectionUtil.getField(StaticModelRenderable.class, "y"));
+            float itemX = Utils.getField(staticModelRenderable, "x");
+            float itemY = Utils.getField(staticModelRenderable, "y");
             if ((Math.sqrt(Math.pow(itemX-x, 2)+Math.pow(itemY-y, 2)) <= distance) && itemNames != null && itemNames.size() > 0)
                 for(String item:itemNames)
                     if (staticModelRenderable.getHoverName().contains(item))

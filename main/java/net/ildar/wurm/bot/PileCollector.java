@@ -17,8 +17,6 @@ import com.wurmonline.client.renderer.gui.ItemListWindow;
 import com.wurmonline.client.renderer.gui.WurmComponent;
 import com.wurmonline.shared.constants.PlayerAction;
 
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
-
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.annotations.BotInfo;
@@ -54,16 +52,14 @@ public class PileCollector extends Bot {
         Set<Long> pickedUpItems = new HashSet<>();
         while (isActive()) {
             waitOnPause();
-            Map<Long, GroundItemCellRenderable> groundItemsMap = ReflectionUtil.getPrivateField(sscc,
-                    ReflectionUtil.getField(sscc.getClass(), "groundItems"));
+            Map<Long, GroundItemCellRenderable> groundItemsMap = Utils.getField(sscc, "groundItems");
             List<GroundItemCellRenderable> groundItems = groundItemsMap.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
             float x = WurmHelper.hud.getWorld().getPlayerPosX();
             float y = WurmHelper.hud.getWorld().getPlayerPosY();
             if (groundItems.size() > 0 && targetLc != null) {
                 try {
                     for (GroundItemCellRenderable groundItem : groundItems) {
-                        GroundItemData groundItemData = ReflectionUtil.getPrivateField(groundItem,
-                                ReflectionUtil.getField(groundItem.getClass(), "item"));
+                        GroundItemData groundItemData = Utils.getField(groundItem, "item");
                         float itemX = groundItemData.getX();
                         float itemY = groundItemData.getY();
                         long itemID = groundItemData.getId();
@@ -89,8 +85,7 @@ public class PileCollector extends Bot {
                     
                     List<InventoryMetaItem> targetItems;
                     if (isContainerWindow) {
-                        InventoryListComponent ilc = ReflectionUtil.getPrivateField(wurmComponent,
-                                ReflectionUtil.getField(wurmComponent.getClass(), "component"));
+                        InventoryListComponent ilc = Utils.getField(wurmComponent, "component");
                         if (ilc == null)
                             continue;
                             
@@ -191,8 +186,7 @@ public class PileCollector extends Bot {
             return;
         }
         try {
-            targetLc = ReflectionUtil.getPrivateField(wurmComponent,
-                    ReflectionUtil.getField(wurmComponent.getClass(), "component"));
+            targetLc = Utils.getField(wurmComponent, "component");
         } catch (IllegalAccessException | NoSuchFieldException e) {
             Utils.consolePrint("Error on configuring the target");
             return;

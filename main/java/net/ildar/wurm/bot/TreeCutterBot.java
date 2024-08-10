@@ -15,7 +15,6 @@ import net.ildar.wurm.Pair;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,13 +80,13 @@ public class TreeCutterBot extends Bot{
             Utils.consolePrint(this.getClass().getSimpleName() + " will use " + hatchet.getDisplayName() + " with QL:" + hatchet.getQuality() + " DMG:" + hatchet.getDamage());
         }
         CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow, ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
 
         ServerConnectionListenerClass sscc = WurmHelper.hud.getWorld().getServerConnection().getServerConnectionListener();
         registerEventProcessors();
         while (isActive()) {
             waitOnPause();
-            float progress = ReflectionUtil.getPrivateField(progressBar, ReflectionUtil.getField(progressBar.getClass(), "progress"));
+            float progress = Utils.getField(progressBar, "progress");
 
             float stamina = player.getStamina();
             float damage = player.getDamage();
@@ -104,11 +103,10 @@ public class TreeCutterBot extends Bot{
                     if (queuedTiles.contains(coordsPair))
                         continue;
 
-                    Map<Long, GroundItemCellRenderable> beeItems = ReflectionUtil.getPrivateField(sscc,
-                            ReflectionUtil.getField(sscc.getClass(), "groundItems"));
+                    Map<Long, GroundItemCellRenderable> beeItems = Utils.getField(sscc, "groundItems");
                     beeItems = beeItems.entrySet().stream().filter(entry -> {
                         try {
-                            GroundItemData groundItemData = ReflectionUtil.getPrivateField(entry.getValue(), ReflectionUtil.getField(entry.getValue().getClass(), "item"));
+                            GroundItemData groundItemData = Utils.getField(entry.getValue(), "item");
                             return groundItemData.getName().contains("hive");
                         } catch (Exception e) {
                             Utils.consolePrint(e.getMessage());

@@ -7,7 +7,6 @@ import com.wurmonline.shared.constants.PlayerAction;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 @BotInfo(description =
         "Prospects selected tile",
@@ -33,8 +32,7 @@ public class ProspectorBot extends Bot {
             pickaxeId = pickaxe.getId();
             Utils.consolePrint(this.getClass().getSimpleName() + " will use " + pickaxe.getBaseName());
         }
-        PickableUnit pickableUnit = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+        PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
         if (pickableUnit == null) {
             Utils.consolePrint("Select cave wall!");
             deactivate();
@@ -43,16 +41,14 @@ public class ProspectorBot extends Bot {
             Utils.consolePrint(this.getClass().getSimpleName() + " will prospect " + pickableUnit.getHoverName());
         long caveWallId = pickableUnit.getId();
         CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow,
-                ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
         setStaminaThreshold(0.9f);
         setClicks(3);
         while (isActive()) {
             waitOnPause();
             float stamina = WurmHelper.hud.getWorld().getPlayer().getStamina();
             float damage = WurmHelper.hud.getWorld().getPlayer().getDamage();
-            float progress = ReflectionUtil.getPrivateField(progressBar,
-                    ReflectionUtil.getField(progressBar.getClass(), "progress"));
+            float progress = Utils.getField(progressBar, "progress");
             if ((stamina+damage) > staminaThreshold && progress == 0f) {
                 if (pickaxe.getDamage() > 10)
                     WurmHelper.hud.sendAction(PlayerAction.REPAIR, pickaxeId);

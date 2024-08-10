@@ -33,8 +33,7 @@ public class FlowerPlanterBot extends Bot {
         CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
         Method sendCreateAction = ReflectionUtil.getMethod(CreationWindow.class, "sendCreateAction");
         sendCreateAction.setAccessible(true);
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow,
-                ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
         int maxActions = Utils.getMaxActionNumber();
         InventoryMetaItem sickle = Utils.locateToolItem("sickle");
         InventoryMetaItem shovel = Utils.locateToolItem("shovel");
@@ -58,8 +57,7 @@ public class FlowerPlanterBot extends Bot {
             waitOnPause();
             float stamina = WurmHelper.hud.getWorld().getPlayer().getStamina();
             float damage = WurmHelper.hud.getWorld().getPlayer().getDamage();
-            float progress = ReflectionUtil.getPrivateField(progressBar,
-                    ReflectionUtil.getField(progressBar.getClass(), "progress"));
+            float progress = Utils.getField(progressBar, "progress");
             int checkedtiles[][] = Utils.getAreaCoordinates();
             int sentactions = 0;
 

@@ -15,6 +15,7 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import net.ildar.wurm.bot.BulkItemGetterBot;
+
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.Configurable;
@@ -202,8 +203,7 @@ public class WurmHelper implements WurmClientMod, Initable, Configurable, PreIni
         }
         InventoryListComponent ilc;
         try {
-            ilc = ReflectionUtil.getPrivateField(inventoryComponent,
-                    ReflectionUtil.getField(inventoryComponent.getClass(), "component"));
+            ilc = Utils.getField(inventoryComponent, "component");
         } catch(Exception e) {
             Utils.consolePrint("Unable to get inventory information");
             return;
@@ -240,13 +240,7 @@ public class WurmHelper implements WurmClientMod, Initable, Configurable, PreIni
     {
         try
         {
-            PickableUnit unit = ReflectionUtil.getPrivateField(
-                hud.getWorld(),
-                ReflectionUtil.getField(
-                    hud.getWorld().getClass(),
-                    "currentHoveredObject"
-                )
-            );
+            PickableUnit unit = Utils.getField(hud.getWorld(), "currentHoveredObject");
             if(!(unit instanceof CreatureCellRenderable))
             {
                 Utils.consolePrint("Not hovering over creature");
@@ -292,7 +286,7 @@ public class WurmHelper implements WurmClientMod, Initable, Configurable, PreIni
     private void printGroundItemInfo(GroundItemCellRenderable item) {
         GroundItemData data;
         try {
-            data = ReflectionUtil.getPrivateField(item, ReflectionUtil.getField(item.getClass(), "item"));
+            data = Utils.getField(item, "item");
         } catch(Exception err) {
             Utils.consolePrint("Couldn't get GroundItemData for item %s");
             return;
@@ -411,8 +405,7 @@ public class WurmHelper implements WurmClientMod, Initable, Configurable, PreIni
         }
         InventoryListComponent ilc;
         try {
-            ilc = ReflectionUtil.getPrivateField(inventoryComponent,
-                    ReflectionUtil.getField(inventoryComponent.getClass(), "component"));
+            ilc = Utils.getField(inventoryComponent, "component");
         } catch(Exception e) {
             e.printStackTrace();
             return;
@@ -440,8 +433,7 @@ public class WurmHelper implements WurmClientMod, Initable, Configurable, PreIni
         for(WurmComponent component : components) {
             if (component instanceof ItemListWindow){
                 try {
-                    ilc = ReflectionUtil.getPrivateField(component,
-                            ReflectionUtil.getField(component.getClass(), "component"));
+                    ilc = Utils.getField(component, "component");
                 } catch (Exception e) {
                     e.printStackTrace();
                     return;
@@ -639,18 +631,15 @@ public class WurmHelper implements WurmClientMod, Initable, Configurable, PreIni
                 WurmComponent wc = (WurmComponent)args[0];
                 boolean notadd = false;
                 if (BulkItemGetterBot.closeBMLWindow && wc instanceof BmlWindowComponent) {
-                    String title = ReflectionUtil.getPrivateField(wc, ReflectionUtil.getField(wc.getClass(), "title"));
+                    String title = Utils.getField(wc, "title");
                     if (title.equals("Removing items")) {
                         if(BulkItemGetterBot.moveQuantity > 0)
                         {
-                            Map<String, Object> inputs = ReflectionUtil.getPrivateField(
-                                wc,
-                                ReflectionUtil.getField(wc.getClass(), "inputFields")
-                            );
+                            Map<String, Object> inputs = Utils.getField(wc, "inputFields");
                             Object quantityField = inputs.values().iterator().next();
-                            ReflectionUtil.setPrivateField(
+                            Utils.setField(
                                 quantityField,
-                                ReflectionUtil.getField(quantityField.getClass(), "input"),
+                                "input",
                                 String.format("%d", BulkItemGetterBot.moveQuantity)
                             );
                         }
@@ -664,21 +653,20 @@ public class WurmHelper implements WurmClientMod, Initable, Configurable, PreIni
                 }
                 if (!notadd) {
                     Object o = method.invoke(proxy, args);
-                    components = new ArrayList<>(ReflectionUtil.getPrivateField(proxy, ReflectionUtil.getField(proxy.getClass(), "components")));
+                    components = new ArrayList<>(Utils.getField(proxy, "components"));
                     return o;
                 }
                 return (Object)true;
             });
             HookManager.getInstance().registerHook("com.wurmonline.client.renderer.gui.HeadsUpDisplay", "setActiveWindow", "(Lcom/wurmonline/client/renderer/gui/WurmComponent;)V", () -> (proxy, method, args) -> {
                 method.invoke(proxy, args);
-                components = new ArrayList<>(ReflectionUtil.getPrivateField(proxy, ReflectionUtil.getField(proxy.getClass(), "components")));
+                components = new ArrayList<>(Utils.getField(proxy, "components"));
                 return null;
             });
 
             Chat.registerMessageProcessor(":Event", message -> message.contains("You fail to relax"), () -> {
                 try {
-                    PickableUnit pickableUnit = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                            ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+                    PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
                     if (pickableUnit != null)
                         WurmHelper.hud.sendAction(new PlayerAction("",(short) 384, PlayerAction.ANYTHING), pickableUnit.getId());
                 } catch (Exception e) {

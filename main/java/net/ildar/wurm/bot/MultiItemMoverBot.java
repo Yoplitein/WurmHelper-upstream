@@ -10,8 +10,6 @@ import com.wurmonline.client.renderer.gui.InventoryWindow;
 import com.wurmonline.client.renderer.gui.ItemListWindow;
 import com.wurmonline.client.renderer.gui.WurmComponent;
 
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
-
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.annotations.BotInfo;
@@ -245,10 +243,7 @@ public class MultiItemMoverBot extends Bot
                 InventoryListComponent listComponent;
                 try
                 {
-                    listComponent = ReflectionUtil.getPrivateField(
-                        inventoryComponent,
-                        ReflectionUtil.getField(inventoryComponent.getClass(), "component")
-                    );
+                    listComponent = Utils.getField(inventoryComponent, "component");
                 }
                 catch(Exception err)
                 {

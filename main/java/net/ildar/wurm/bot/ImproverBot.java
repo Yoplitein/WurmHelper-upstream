@@ -12,7 +12,6 @@ import com.wurmonline.shared.util.MaterialUtilities;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.util.*;
 
@@ -92,14 +91,14 @@ public class ImproverBot extends Bot {
         setTimeout(300);
         registerEventProcessors();
         CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow, ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
         while (isActive()) {
             waitOnPause();
             if (targets.size() == 0 && !groundMode) {
                 sleep(timeout);
                 continue;
             }
-            float progress = ReflectionUtil.getPrivateField(progressBar, ReflectionUtil.getField(progressBar.getClass(), "progress"));
+            float progress = Utils.getField(progressBar, "progress");
             float stamina = WurmHelper.hud.getWorld().getPlayer().getStamina();
             float damage = WurmHelper.hud.getWorld().getPlayer().getDamage();
             boolean improveInitiated = false;
@@ -147,8 +146,7 @@ public class ImproverBot extends Bot {
                         break;
                     }
                 } else {
-                    PickableUnit pickableUnit = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                            ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+                    PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
                     boolean isCreatureCell = pickableUnit instanceof CreatureCellRenderable && ((CreatureCellRenderable)pickableUnit).isItem();
                     boolean isGroundCell = pickableUnit instanceof GroundItemCellRenderable;
                     if (pickableUnit == null || (!isCreatureCell && !isGroundCell)) {
@@ -162,7 +160,7 @@ public class ImproverBot extends Bot {
                         materialId=creatureItem.getMaterialId();
                     }
                     if(isGroundCell){
-                        GroundItemData pickableItem = ReflectionUtil.getPrivateField(pickableUnit, ReflectionUtil.getField(GroundItemCellRenderable.class, "item"));
+                        GroundItemData pickableItem = Utils.getField(pickableUnit, "item");
                         materialId=pickableItem.getMaterialId();
                     }
                     if(materialId==-1){
@@ -392,8 +390,7 @@ public class ImproverBot extends Bot {
         }
         InventoryListComponent ilc;
         try {
-            ilc = ReflectionUtil.getPrivateField(inventoryComponent,
-                    ReflectionUtil.getField(inventoryComponent.getClass(), "component"));
+            ilc = Utils.getField(inventoryComponent, "component");
         } catch(Exception e) {
             Utils.consolePrint("Unable to get inventory information");
             return;

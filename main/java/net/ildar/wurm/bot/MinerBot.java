@@ -12,7 +12,6 @@ import net.ildar.wurm.Pair;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -88,29 +87,25 @@ public class MinerBot extends Bot {
                 for (WurmComponent wurmComponent : WurmHelper.getInstance().components)
                     if (wurmComponent instanceof ItemListWindow
                             && !(wurmComponent instanceof InventoryWindow)) {
-                        if (Utils.getRootItem(ReflectionUtil.getPrivateField(wurmComponent,
-                                ReflectionUtil.getField(wurmComponent.getClass(), "component"))).getBaseName().toLowerCase().contains("pile of"))
+                        if (Utils.getRootItem(Utils.getField(wurmComponent, "component")).getBaseName().toLowerCase().contains("pile of"))
                             piles.add((ItemListWindow) wurmComponent);
                     }
 
                 ServerConnectionListenerClass sscc = WurmHelper.hud.getWorld().getServerConnection().getServerConnectionListener();
-                Map<Long, GroundItemCellRenderable> groundItems = ReflectionUtil.getPrivateField(sscc,
-                        ReflectionUtil.getField(sscc.getClass(), "groundItems"));
+                Map<Long, GroundItemCellRenderable> groundItems = Utils.getField(sscc, "groundItems");
                 int tileX = WurmHelper.hud.getWorld().getPlayerCurrentTileX();
                 int tileY = WurmHelper.hud.getWorld().getPlayerCurrentTileY();
                 List<Long> closePileIds = new ArrayList<>();
                 for (Map.Entry<Long, GroundItemCellRenderable> entry : new HashSet<>(groundItems.entrySet())) {
                     GroundItemCellRenderable groundItem = entry.getValue();
-                    GroundItemData groundItemData = ReflectionUtil.getPrivateField(groundItem,
-                            ReflectionUtil.getField(groundItem.getClass(), "item"));
+                    GroundItemData groundItemData = Utils.getField(groundItem, "item");
                     int itemX = (int) (groundItemData.getX()/4);
                     int itemY = (int) (groundItemData.getY()/4);
                     if (itemX == tileX && itemY == tileY && groundItem.getHoverName().toLowerCase().contains("pile of ")) {
                         closePileIds.add(groundItem.getId());
                         if (piles.stream().noneMatch(pile -> {
                             try {
-                                InventoryListComponent ilc = ReflectionUtil.getPrivateField(pile,
-                                        ReflectionUtil.getField(pile.getClass(), "component"));
+                                InventoryListComponent ilc = Utils.getField(pile, "component");
                                 InventoryMetaItem rootItem = Utils.getRootItem(ilc);
                                 if (rootItem != null)
                                     return rootItem.getId() == groundItem.getId();
@@ -128,8 +123,7 @@ public class MinerBot extends Bot {
                 float freeSpace = Utils.getMaxWeight() - Utils.getTotalWeight();
                 List<InventoryMetaItem> itemsToTake = new ArrayList<>();
                 for (ItemListWindow wurmComponent : piles) {
-                    InventoryListComponent ilc = ReflectionUtil.getPrivateField(wurmComponent,
-                            ReflectionUtil.getField(wurmComponent.getClass(), "component"));
+                    InventoryListComponent ilc = Utils.getField(wurmComponent, "component");
                     InventoryMetaItem rootItem = Utils.getRootItem(ilc);
                     if (!closePileIds.contains(rootItem.getId())) {
                         WurmHelper.hud.sendAction(PlayerAction.CLOSE, rootItem.getId());
@@ -172,22 +166,15 @@ public class MinerBot extends Bot {
             }
             float stamina = WurmHelper.hud.getWorld().getPlayer().getStamina();
             float damage = WurmHelper.hud.getWorld().getPlayer().getDamage();
-            /*SelectBarRenderer sbr = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                    ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "renderer"));
-            Object wpb = ReflectionUtil.getPrivateField(sbr,
-                    ReflectionUtil.getField(sbr.getClass(), "progressBar"));*/
-            Object progressBar = ReflectionUtil.getPrivateField(WurmHelper.hud.getCreationWindow(),
-                    ReflectionUtil.getField(WurmHelper.hud.getCreationWindow().getClass(), "progressBar"));
-            float progress = ReflectionUtil.getPrivateField(progressBar,
-                    ReflectionUtil.getField(progressBar.getClass(), "progress"));
+            Object progressBar = Utils.getField(WurmHelper.hud.getCreationWindow(), "progressBar");
+            float progress = Utils.getField(progressBar, "progress");
             if ((stamina + damage) > staminaThreshold && progress == 0f) {
                 boolean actionTaken = false;
                 if (pickaxe.getDamage() > 10)
                     WurmHelper.hud.sendAction(PlayerAction.REPAIR, pickaxe.getId());
                 switch (miningMode) {
                     case SelectedTile: {
-                        PickableUnit tile = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                                ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+                        PickableUnit tile = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
                         if (tile != null) {
                             sendMineActions(tile.getId());
                             actionTaken = true;
@@ -502,8 +489,7 @@ public class MinerBot extends Bot {
     private void setFixedMiningMode() {
         PickableUnit tile;
         try {
-            tile = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                    ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+            tile = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
         } catch (IllegalAccessException | NoSuchFieldException e) {
             Utils.consolePrint("Error on getting tile information");
             return;
@@ -633,8 +619,7 @@ public class MinerBot extends Bot {
             return;
         }
         try {
-            InventoryListComponent ilc = ReflectionUtil.getPrivateField(container,
-                    ReflectionUtil.getField(container.getClass(), "component"));
+            InventoryListComponent ilc = Utils.getField(container, "component");
             InventoryMetaItem rootItem = Utils.getRootItem(ilc);
             if (rootItem == null) {
                 Utils.consolePrint("");
@@ -657,8 +642,7 @@ public class MinerBot extends Bot {
             return;
         }
         try {
-            smeltingOptions.smelter = ReflectionUtil.getPrivateField(smelter,
-                    ReflectionUtil.getField(smelter.getClass(), "component"));
+            smeltingOptions.smelter = Utils.getField(smelter, "component");
             Utils.consolePrint("The smelter is set");
         } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
@@ -672,8 +656,7 @@ public class MinerBot extends Bot {
             return;
         }
         try {
-            smeltingOptions.pile = ReflectionUtil.getPrivateField(pile,
-                    ReflectionUtil.getField(pile.getClass(), "component"));
+            smeltingOptions.pile = Utils.getField(pile, "component");
             Utils.consolePrint("The pile is set");
         } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();

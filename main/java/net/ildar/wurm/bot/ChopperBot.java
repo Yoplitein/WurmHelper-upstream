@@ -9,7 +9,6 @@ import com.wurmonline.shared.constants.PlayerAction;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.util.ConcurrentModificationException;
 import java.util.Map;
@@ -47,26 +46,22 @@ public class ChopperBot extends Bot {
             Utils.consolePrint("QL:" + hatchet.getQuality() + " DMG:" + hatchet.getDamage());
         }
         CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow,
-                ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
         ServerConnectionListenerClass sscc = WurmHelper.hud.getWorld().getServerConnection().getServerConnectionListener();
         while (isActive()) {
             waitOnPause();
             float stamina = WurmHelper.hud.getWorld().getPlayer().getStamina();
             float damage = WurmHelper.hud.getWorld().getPlayer().getDamage();
-            float progress = ReflectionUtil.getPrivateField(progressBar,
-                    ReflectionUtil.getField(progressBar.getClass(), "progress"));
+            float progress = Utils.getField(progressBar, "progress");
             if ((stamina+damage) > staminaThreshold && progress == 0f) {
-                Map<Long, GroundItemCellRenderable> groundItems = ReflectionUtil.getPrivateField(sscc,
-                        ReflectionUtil.getField(sscc.getClass(), "groundItems"));
+                Map<Long, GroundItemCellRenderable> groundItems = Utils.getField(sscc, "groundItems");
                 float x = WurmHelper.hud.getWorld().getPlayerPosX();
                 float y = WurmHelper.hud.getWorld().getPlayerPosY();
                 boolean didSomething = false;
                 if (groundItems.size() > 0) {
                     try {
                         for (Map.Entry<Long, GroundItemCellRenderable> entry : groundItems.entrySet()) {
-                            GroundItemData groundItemData = ReflectionUtil.getPrivateField(entry.getValue(),
-                                    ReflectionUtil.getField(entry.getValue().getClass(), "item"));
+                            GroundItemData groundItemData = Utils.getField(entry.getValue(), "item");
                             float itemX = groundItemData.getX();
                             float itemY = groundItemData.getY();
                             if (Math.sqrt(Math.pow(itemX - x, 2) + Math.pow(itemY - y, 2)) <= distance)

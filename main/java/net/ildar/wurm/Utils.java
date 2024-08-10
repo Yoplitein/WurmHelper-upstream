@@ -108,8 +108,7 @@ public class Utils {
         try{
             float x = WurmHelper.hud.getWorld().getPlayerPosX();
             float y = WurmHelper.hud.getWorld().getPlayerPosY();
-            float xr = ReflectionUtil.getPrivateField(WurmHelper.hud.getWorld().getPlayer(),
-                    ReflectionUtil.getField(WurmHelper.hud.getWorld().getPlayer().getClass(), "xRotUsed"));
+            float xr = getField(WurmHelper.hud.getWorld().getPlayer(), "xRotUsed");
             float dx = (float)(d*Math.sin((double)xr/180*Math.PI));
             float dy = (float)(-d*Math.cos((double)xr/180*Math.PI));
             movePlayer(x+dx, y+dy);
@@ -123,8 +122,7 @@ public class Utils {
         try{
             float x = WurmHelper.hud.getWorld().getPlayerPosX();
             float y = WurmHelper.hud.getWorld().getPlayerPosY();
-            float xr = ReflectionUtil.getPrivateField(WurmHelper.hud.getWorld().getPlayer(),
-                    ReflectionUtil.getField(WurmHelper.hud.getWorld().getPlayer().getClass(), "xRotUsed"));
+            float xr = getField(WurmHelper.hud.getWorld().getPlayer(), "xRotUsed");
             float dx = (float)(d*Math.sin((double)xr/180*Math.PI));
             float dy = (float)(-d*Math.cos((double)xr/180*Math.PI));
             movePlayerBySteps(x+dx, y+dy, steps, duration);
@@ -179,13 +177,10 @@ public class Utils {
      */
     public static void stabilizeLook() {
         try{
-            float xRot = ReflectionUtil.getPrivateField(WurmHelper.hud.getWorld().getPlayer(),
-                    ReflectionUtil.getField(WurmHelper.hud.getWorld().getPlayer().getClass(), "xRotUsed"));
+            float xRot = getField(WurmHelper.hud.getWorld().getPlayer(), "xRotUsed");
             xRot = Math.round(xRot/90)*90;
-            ReflectionUtil.setPrivateField(WurmHelper.hud.getWorld().getPlayer(),
-                    ReflectionUtil.getField(WurmHelper.hud.getWorld().getPlayer().getClass(), "xRotUsed"), xRot);
-            ReflectionUtil.setPrivateField(WurmHelper.hud.getWorld().getPlayer(),
-                    ReflectionUtil.getField(WurmHelper.hud.getWorld().getPlayer().getClass(), "yRotUsed"), (float)0.0);
+            setField(WurmHelper.hud.getWorld().getPlayer(), "xRotUsed", xRot);
+            setField(WurmHelper.hud.getWorld().getPlayer(), "yRotUsed", (float)0.0);
         } catch (Exception e) {
             consolePrint("Unexpected error while turning - " + e.getMessage());
         }
@@ -197,10 +192,8 @@ public class Utils {
             float y = WurmHelper.hud.getWorld().getPlayerPosY();
             x = (float)(Math.floor((double)x/4)*4 + 2);
             y = (float)(Math.floor((double)y/4)*4 + 2);
-            ReflectionUtil.setPrivateField(WurmHelper.hud.getWorld().getPlayer(),
-                    ReflectionUtil.getField(WurmHelper.hud.getWorld().getPlayer().getClass(), "xPosUsed"), x);
-            ReflectionUtil.setPrivateField(WurmHelper.hud.getWorld().getPlayer(),
-                    ReflectionUtil.getField(WurmHelper.hud.getWorld().getPlayer().getClass(), "yPosUsed"), y);
+            setField(WurmHelper.hud.getWorld().getPlayer(), "xPosUsed", x);
+            setField(WurmHelper.hud.getWorld().getPlayer(), "yPosUsed", y);
 
         } catch (Exception e) {
             consolePrint("Unexpected error while moving - " + e.getMessage());
@@ -213,10 +206,8 @@ public class Utils {
             float y = WurmHelper.hud.getWorld().getPlayerPosY();
             x = Math.round(x / 4) * 4;
             y = Math.round(y / 4) * 4;
-            ReflectionUtil.setPrivateField(WurmHelper.hud.getWorld().getPlayer(),
-                    ReflectionUtil.getField(WurmHelper.hud.getWorld().getPlayer().getClass(), "xPosUsed"), x);
-            ReflectionUtil.setPrivateField(WurmHelper.hud.getWorld().getPlayer(),
-                    ReflectionUtil.getField(WurmHelper.hud.getWorld().getPlayer().getClass(), "yPosUsed"), y);
+            setField(WurmHelper.hud.getWorld().getPlayer(), "xPosUsed", x);
+            setField(WurmHelper.hud.getWorld().getPlayer(), "yPosUsed", y);
         } catch(Exception e) {
             consolePrint("Error on moving to the corner");
         }
@@ -228,15 +219,12 @@ public class Utils {
     }
 
     private static Object getInventoryRootNode(InventoryListComponent ilc) throws NoSuchFieldException, IllegalAccessException {
-        WurmTreeList wtl = ReflectionUtil.getPrivateField(ilc,
-                ReflectionUtil.getField(ilc.getClass(), "itemList"));
-        return ReflectionUtil.getPrivateField(wtl,
-                ReflectionUtil.getField(wtl.getClass(), "rootNode"));
+        WurmTreeList wtl = getField(ilc, "itemList");
+        return getField(wtl, "rootNode");
     }
 
     private static List<Object> getNodeChildren(Object node) throws NoSuchFieldException, IllegalAccessException {
-        return new ArrayList<>(ReflectionUtil.getPrivateField(node,
-                ReflectionUtil.getField(node.getClass(), "children")));
+        return new ArrayList<>(getField(node, "children"));
     }
 
     public static List<InventoryMetaItem>  getSelectedItems() {
@@ -251,8 +239,8 @@ public class Utils {
             int lineNum = 1;
             int forEachIdx = 0;
             for (Object line : lines) {
-                Object item = ReflectionUtil.getPrivateField(line, ReflectionUtil.getField(line.getClass(), "item"));
-                String itemName = ReflectionUtil.getPrivateField(item, ReflectionUtil.getField(item.getClass(), "itemName"));
+                Object item = getField(line, "item");
+                String itemName = getField(item, "itemName");
                 if (itemName.equals("inventory"))
                     lineNum = forEachIdx;
                 forEachIdx++;
@@ -285,24 +273,17 @@ public class Utils {
         List<InventoryMetaItem> selItems = new ArrayList<>();
         try {
             for (Object currentNode : nodes) {
-                boolean isSelected = ReflectionUtil.getPrivateField(currentNode,
-                        ReflectionUtil.getField(currentNode.getClass(), "isSelected"));
+                boolean isSelected = getField(currentNode, "isSelected");
                 List children = getNodeChildren(currentNode);
-                Object lineItem = ReflectionUtil.getPrivateField(currentNode,
-                        ReflectionUtil.getField(currentNode.getClass(), "item"));
-                InventoryMetaItem item = ReflectionUtil.getPrivateField(lineItem,
-                        ReflectionUtil.getField(lineItem.getClass(), "item"));
+                Object lineItem = getField(currentNode, "item");
+                InventoryMetaItem item = getField(lineItem, "item");
                 if (item == null) continue;
-                boolean isContainer = ReflectionUtil.getPrivateField(lineItem,
-                        ReflectionUtil.getField(lineItem.getClass(), "isContainer"));
-                boolean isInventoryGroup = ReflectionUtil.getPrivateField(lineItem,
-                        ReflectionUtil.getField(lineItem.getClass(), "isInventoryGroup"));
+                boolean isContainer = getField(lineItem, "isContainer");
+                boolean isInventoryGroup = getField(lineItem, "isInventoryGroup");
                 if (children.size() > 0) {
                     if (isContainer && !isInventoryGroup && (getAll || isSelected)) {
-                        Object firstChildrenLineItem = ReflectionUtil.getPrivateField(children.get(0),
-                                ReflectionUtil.getField(children.get(0).getClass(), "item"));
-                        InventoryMetaItem firstChildrenItem = ReflectionUtil.getPrivateField(firstChildrenLineItem,
-                                ReflectionUtil.getField(firstChildrenLineItem.getClass(), "item"));
+                        Object firstChildrenLineItem = getField(children.get(0), "item");
+                        InventoryMetaItem firstChildrenItem = getField(firstChildrenLineItem, "item");
                         if (firstChildrenItem == null || firstChildrenItem.getId() != item.getId())
                             selItems.add(item);
                         if (recursive || getAll)
@@ -407,20 +388,16 @@ public class Utils {
     public static List<InventoryMetaItem> getInventoryItemsAtPoint(InventoryListComponent ilc, int x, int y) {
         List<InventoryMetaItem> itemList = new ArrayList<>();
         try {
-            WurmTreeList wtl = ReflectionUtil.getPrivateField(ilc,
-                    ReflectionUtil.getField(ilc.getClass(), "itemList"));
+            WurmTreeList wtl = getField(ilc, "itemList");
             Method getNodeAt = ReflectionUtil.getMethod(wtl.getClass(), "getNodeAt");
             getNodeAt.setAccessible(true);
             Object hoveredNode = getNodeAt.invoke(wtl, x, y);
             if (hoveredNode != null) {
                 List childLines = getNodeChildren(hoveredNode);
                 itemList = Utils.getSelectedItems(childLines, true, true);
-                Object lineItem = ReflectionUtil.getPrivateField(hoveredNode,
-                        ReflectionUtil.getField(hoveredNode.getClass(), "item"));
-                InventoryMetaItem item = ReflectionUtil.getPrivateField(lineItem,
-                        ReflectionUtil.getField(lineItem.getClass(), "item"));
-                boolean isContainer = ReflectionUtil.getPrivateField(lineItem,
-                        ReflectionUtil.getField(lineItem.getClass(), "isContainer"));
+                Object lineItem = getField(hoveredNode, "item");
+                InventoryMetaItem item = getField(lineItem, "item");
+                boolean isContainer = getField(lineItem, "isContainer");
                 if (childLines.size() == 0 || isContainer)
                     itemList.add(item);
             }
@@ -435,10 +412,8 @@ public class Utils {
         try {
             Object rootNode = getInventoryRootNode(ilc);
             List lines = getNodeChildren(rootNode);
-            Object nodeLineItem = ReflectionUtil.getPrivateField(lines.get(1),
-                    ReflectionUtil.getField(lines.get(1).getClass(), "item"));
-            InventoryMetaItem nodeItem = ReflectionUtil.getPrivateField(nodeLineItem,
-                    ReflectionUtil.getField(nodeLineItem.getClass(), "item"));
+            Object nodeLineItem = getField(lines.get(1), "item");
+            InventoryMetaItem nodeItem = getField(nodeLineItem, "item");
             return new ArrayList<>(nodeItem.getChildren());
         } catch (Exception e) {
             Utils.consolePrint("getFirstLevelItems() has encountered an error - " + e.getMessage());
@@ -467,10 +442,8 @@ public class Utils {
 
     public static InventoryMetaItem getRootItem(InventoryListComponent ilc) {
         try {
-            Object listRootItem = ReflectionUtil.getPrivateField(ilc,
-                    ReflectionUtil.getField(ilc.getClass(), "rootItem"));
-            return ReflectionUtil.getPrivateField(listRootItem,
-                    ReflectionUtil.getField(listRootItem.getClass(), "item"));
+            Object listRootItem = getField(ilc, "rootItem");
+            return getField(listRootItem, "item");
         } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
@@ -508,10 +481,7 @@ public class Utils {
         
         InventoryListComponent invComponent;
         try {
-            invComponent = ReflectionUtil.getPrivateField(
-                component,
-                ReflectionUtil.getField(component.getClass(), "component")
-            );
+            invComponent = getField(component, "component");
         } catch(Exception err) {
             Utils.consolePrint("Couldn't get container's ListComponent");
             err.printStackTrace();
@@ -598,10 +568,8 @@ public class Utils {
     public static float getTotalWeight() {
         PaperDollInventory paperDollInventory = WurmHelper.hud.getPaperDollInventory();
         try {
-            PaperDollSlot equippedWeightItem = ReflectionUtil.getPrivateField(paperDollInventory,
-                    ReflectionUtil.getField(paperDollInventory.getClass(), "equippedWeightItem"));
-            InventoryMetaItem inventoryItem = ReflectionUtil.getPrivateField(paperDollInventory,
-                    ReflectionUtil.getField(paperDollInventory.getClass(), "inventoryItem"));
+            PaperDollSlot equippedWeightItem = getField(paperDollInventory, "equippedWeightItem");
+            InventoryMetaItem inventoryItem = getField(paperDollInventory, "inventoryItem");
             return equippedWeightItem.getWeight() + inventoryItem.getWeight();
         } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
@@ -626,8 +594,7 @@ public class Utils {
     public static int getMaxActionNumber() {
         MindLogicCalculator mlc;
         try {
-            mlc = ReflectionUtil.getPrivateField(WurmHelper.hud,
-                    ReflectionUtil.getField(WurmHelper.hud.getClass(), "mindLogicCalculator"));
+            mlc = getField(WurmHelper.hud, "mindLogicCalculator");
         } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
             return 0;
@@ -642,8 +609,8 @@ public class Utils {
 
     public static void writeToConsoleInputLine(String s) {
         try {
-            Object consoleComponent = ReflectionUtil.getPrivateField(WurmHelper.hud, ReflectionUtil.getField(WurmHelper.hud.getClass(), "consoleComponent"));
-            Object inputField = ReflectionUtil.getPrivateField(consoleComponent, ReflectionUtil.getField(consoleComponent.getClass(), "inputField"));
+            Object consoleComponent = getField(WurmHelper.hud, "consoleComponent");
+            Object inputField = getField(consoleComponent, "inputField");
             Method method = inputField.getClass().getDeclaredMethod("setTextMoveToEnd", String.class);
             method.setAccessible(true);
             method.invoke(inputField, s);

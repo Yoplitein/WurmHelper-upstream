@@ -5,7 +5,6 @@ import com.wurmonline.client.renderer.gui.*;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.util.*;
 
@@ -190,8 +189,7 @@ public class ItemMoverBot extends Bot {
             return;
         }
         try {
-            targetComponent = ReflectionUtil.getPrivateField(wurmComponent,
-                    ReflectionUtil.getField(wurmComponent.getClass(), "component"));
+            targetComponent = Utils.getField(wurmComponent, "component");
             this.containerName = newContainer.toString();
             targetType = TargetType.Containers;
             Utils.consolePrint("New target component was set with container \"" + containerName + "\"");
@@ -209,8 +207,7 @@ public class ItemMoverBot extends Bot {
         }
         InventoryListComponent ilc;
         try {
-            ilc = ReflectionUtil.getPrivateField(inventoryComponent,
-                    ReflectionUtil.getField(inventoryComponent.getClass(), "component"));
+            ilc = Utils.getField(inventoryComponent, "component");
         } catch(Exception e) {
             Utils.consolePrint("Error on getting container information");
             e.printStackTrace();

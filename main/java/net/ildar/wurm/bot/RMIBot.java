@@ -17,8 +17,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
-
 import com.wurmonline.client.console.WurmConsole;
 import com.wurmonline.client.game.World;
 import com.wurmonline.client.game.inventory.InventoryMetaItem;
@@ -933,14 +931,8 @@ public class RMIBot extends Bot implements BotServer, BotClient, Executor
         CreatureCellRenderable targetCreature;
         try
         {
-            TargetWindow window = ReflectionUtil.getPrivateField(
-                hud,
-                ReflectionUtil.getField(hud.getClass(), "targetWindow")
-            );
-            targetCreature = ReflectionUtil.getPrivateField(
-                window,
-                ReflectionUtil.getField(window.getClass(), "creature")
-            );
+            TargetWindow window = Utils.getField(hud, "targetWindow");
+            targetCreature = Utils.getField(window, "creature");
         }
         catch(Exception err)
         {
@@ -1067,14 +1059,8 @@ public class RMIBot extends Bot implements BotServer, BotClient, Executor
         try
         {
             CreationWindow creationWindow = hud.getCreationWindow();
-            CreationFrame source = ReflectionUtil.getPrivateField(
-                creationWindow,
-                ReflectionUtil.getField(creationWindow.getClass(), "source")
-            );
-            CreationFrame target = ReflectionUtil.getPrivateField(
-                creationWindow,
-                ReflectionUtil.getField(creationWindow.getClass(), "target")
-            );
+            CreationFrame source = Utils.getField(creationWindow, "source");
+            CreationFrame target = Utils.getField(creationWindow, "target");
             
             source.clearGroundItem();
             target.clearGroundItem();

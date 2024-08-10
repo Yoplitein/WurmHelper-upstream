@@ -10,8 +10,6 @@ import com.wurmonline.client.renderer.PickableUnit;
 import com.wurmonline.client.renderer.gui.CreationWindow;
 import com.wurmonline.shared.constants.PlayerAction;
 
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
-
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.annotations.BotInfo;
@@ -25,15 +23,13 @@ public class SellerBot extends Bot
     int maxSellActions = 3;
     
     Object progressBar;
-    Field progressField;
     
     public SellerBot()
     {
         try
         {
             CreationWindow cwindow = WurmHelper.hud.getCreationWindow();
-            progressBar = ReflectionUtil.getPrivateField(cwindow, ReflectionUtil.getField(cwindow.getClass(), "progressBar"));
-            progressField = ReflectionUtil.getField(progressBar.getClass(), "progress");
+            progressBar = Utils.getField(cwindow, "progressBar");
         }
         catch(Exception err)
         {
@@ -98,7 +94,7 @@ public class SellerBot extends Bot
     
     float getProgress() throws Exception
     {
-        return ReflectionUtil.getPrivateField(progressBar, progressField);
+        return Utils.getField(progressBar, "progress");
     }
     
     void addItem(String[] args)
@@ -150,10 +146,7 @@ public class SellerBot extends Bot
         targetToken = -1;
         try
         {
-            PickableUnit pickableUnit = ReflectionUtil.getPrivateField(
-                WurmHelper.hud.getSelectBar(),
-                ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit")
-            );
+            PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
             if(pickableUnit == null || !pickableUnit.getHoverName().contains("settlement token"))
             {
                 Utils.consolePrint("Select a deed token!");

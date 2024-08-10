@@ -11,7 +11,6 @@ import com.wurmonline.shared.constants.PlayerAction;
 import net.ildar.wurm.WurmHelper;
 import net.ildar.wurm.Utils;
 import net.ildar.wurm.annotations.BotInfo;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.util.Map;
 
@@ -34,10 +33,8 @@ public class ArcherBot extends Bot {
     @Override
     public void work() throws Exception{
         setStaminaThreshold(0.9f);
-        PaperDollInventory pdi = ReflectionUtil.getPrivateField(WurmHelper.hud,
-                ReflectionUtil.getField(WurmHelper.hud.getClass(), "paperdollInventory"));
-        Map<Long, PaperDollSlot> frameList = ReflectionUtil.getPrivateField(pdi,
-                ReflectionUtil.getField(PaperDollInventory.class, "frameList"));
+        PaperDollInventory pdi = Utils.getField(WurmHelper.hud, "paperdollInventory");
+        Map<Long, PaperDollSlot> frameList = Utils.getField(pdi, "frameList");
         for (Map.Entry<Long, PaperDollSlot> frame : frameList.entrySet()) {
             PaperDollSlot slot = frame.getValue();
             if (slot == null || slot.getEquippedItem() == null) continue;
@@ -52,8 +49,7 @@ public class ArcherBot extends Bot {
             return;
         }
 
-        PickableUnit pickableUnit = ReflectionUtil.getPrivateField(WurmHelper.hud.getSelectBar(),
-                ReflectionUtil.getField(WurmHelper.hud.getSelectBar().getClass(), "selectedUnit"));
+        PickableUnit pickableUnit = Utils.getField(WurmHelper.hud.getSelectBar(), "selectedUnit");
         if (pickableUnit == null){
             Utils.consolePrint("Select mob!");
             deactivate();
@@ -65,15 +61,13 @@ public class ArcherBot extends Bot {
 
         int maxActions = Utils.getMaxActionNumber();
         CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow,
-                ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
         registerEventProcessors();
         while (isActive()) {
             waitOnPause();
             float stamina = WurmHelper.hud.getWorld().getPlayer().getStamina();
             float damage = WurmHelper.hud.getWorld().getPlayer().getDamage();
-            float progress = ReflectionUtil.getPrivateField(progressBar,
-                    ReflectionUtil.getField(progressBar.getClass(), "progress"));
+            float progress = Utils.getField(progressBar, "progress");
             if ((stamina+damage) > staminaThreshold && creationWindow.getActionInUse() == 0 && progress == 0f) {
                 if (stringBreaks) {
                         InventoryMetaItem bowstring = Utils.getInventoryItem("bow string");
@@ -86,8 +80,7 @@ public class ArcherBot extends Bot {
                     WurmHelper.hud.getWorld().getServerConnection().sendAction(bow.getId(), new long[]{mobId}, (!isArcheryTarget ? PlayerAction.SHOOT : new PlayerAction("",(short) 134, PlayerAction.ANYTHING)));
 
                 ServerConnectionListenerClass sscc = WurmHelper.hud.getWorld().getServerConnection().getServerConnectionListener();
-                Map<Long, CreatureCellRenderable> creatures = ReflectionUtil.getPrivateField(sscc,
-                        ReflectionUtil.getField(sscc.getClass(), "creatures"));
+                Map<Long, CreatureCellRenderable> creatures = Utils.getField(sscc, "creatures");
                 boolean mobAlive = false;
                 if (creatures!=null && !isArcheryTarget)
                     for(Map.Entry<Long, CreatureCellRenderable> entry:creatures.entrySet())

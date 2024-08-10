@@ -67,45 +67,35 @@ public class CrafterBot extends Bot {
         sendCreateAction.setAccessible(true);
         Method requestCreationList = ReflectionUtil.getMethod(creationWindow.getClass(), "requestCreationList");
         requestCreationList.setAccessible(true);
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow,
-                ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
-        CreationFrame source = ReflectionUtil.getPrivateField(creationWindow,
-                ReflectionUtil.getField(creationWindow.getClass(), "source"));
-        CreationFrame target = ReflectionUtil.getPrivateField(creationWindow,
-                ReflectionUtil.getField(creationWindow.getClass(), "target"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
+        CreationFrame source = Utils.getField(creationWindow, "source");
+        CreationFrame target = Utils.getField(creationWindow, "target");
         registerEventProcessors();
         while (isActive()) {
             waitOnPause();
             float stamina = WurmHelper.hud.getWorld().getPlayer().getStamina();
             float damage = WurmHelper.hud.getWorld().getPlayer().getDamage();
-            float progress = ReflectionUtil.getPrivateField(progressBar,
-                    ReflectionUtil.getField(progressBar.getClass(), "progress"));
+            float progress = Utils.getField(progressBar, "progress");
 
             if (repairInstrument) {
                 @SuppressWarnings("unchecked")
-                List<InventoryMetaItem> sourceItems = new ArrayList(ReflectionUtil.getPrivateField(source,
-                        ReflectionUtil.getField(source.getClass(), "itemList")));
+                List<InventoryMetaItem> sourceItems = new ArrayList(Utils.getField(source, "itemList"));
                 if (sourceItems != null && sourceItems.size() > 0 && sourceItems.get(0).getDamage() > 10)
                     WurmHelper.hud.sendAction(PlayerAction.REPAIR, sourceItems.get(0).getId());
             }
 
             if (craftUnfinishedItemMode) {
-                WurmTreeList<CreationItemTreeLisItem> unfinishedItemList = ReflectionUtil.getPrivateField(creationWindow,
-                        ReflectionUtil.getField(creationWindow.getClass(), "unfinishedItemList"));
+                WurmTreeList<CreationItemTreeLisItem> unfinishedItemList = Utils.getField(creationWindow, "unfinishedItemList");
                 if (unfinishedItemList != null) {
-                    List lines = ReflectionUtil.getPrivateField(unfinishedItemList,
-                            ReflectionUtil.getField(unfinishedItemList.getClass(), "lines"));
+                    List lines = Utils.getField(unfinishedItemList, "lines");
                     if (lines != null && lines.size() > 0) {
                         targetName = null;
                         //noinspection ForLoopReplaceableByForEach
                         for (int i = 0; i < lines.size(); i++) {
-                            CreationItemTreeLisItem listItem = ReflectionUtil.getPrivateField(lines.get(i),
-                                    ReflectionUtil.getField(lines.get(i).getClass(), "item"));
-                            String chance = ReflectionUtil.getPrivateField(listItem,
-                                    ReflectionUtil.getField(listItem.getClass(), "chance"));
+                            CreationItemTreeLisItem listItem = Utils.getField(lines.get(i), "item");
+                            String chance = Utils.getField(listItem, "chance");
                             if (chance != null && !chance.equals("") && !chance.contains("%")) {
-                                targetName = ReflectionUtil.getPrivateField(listItem,
-                                        ReflectionUtil.getField(listItem.getClass(), "name"));
+                                targetName = Utils.getField(listItem, "name");
                                 break;
                             }
                         }
@@ -118,8 +108,7 @@ public class CrafterBot extends Bot {
                 List<InventoryMetaItem> targetItems = Utils.getInventoryItems(targetName).stream().filter(item -> item.getBaseName().equals(targetName)).collect(Collectors.toList());
                 if (!noSort)
                     targetItems.sort(weightComparator);
-                ReflectionUtil.setPrivateField(target,
-                        ReflectionUtil.getField(target.getClass(), "itemList"), targetItems);
+                Utils.setField(target, "itemList", targetItems);
                 if (targetItems.size() > 0)
                     target.setTexture(targetItems.get(0));
             }
@@ -130,11 +119,9 @@ public class CrafterBot extends Bot {
                 if (singleSourceItemMode && sourceItems != null && sourceItems.size() > 0) {
                     List<InventoryMetaItem> singleSourceItemList = new ArrayList<>();
                     singleSourceItemList.add(sourceItems.get(0));
-                    ReflectionUtil.setPrivateField(source,
-                            ReflectionUtil.getField(source.getClass(), "itemList"), singleSourceItemList);
+                    Utils.setField(source, "itemList", singleSourceItemList);
                 } else {
-                    ReflectionUtil.setPrivateField(source,
-                            ReflectionUtil.getField(source.getClass(), "itemList"), sourceItems);
+                    Utils.setField(source, "itemList", sourceItems);
                 }
                 if (sourceItems.size() > 0)
                     source.setTexture(sourceItems.get(0));
@@ -143,21 +130,18 @@ public class CrafterBot extends Bot {
             if (targetX != 0 && targetY != 0) {
                 List<InventoryMetaItem> items = Utils.getInventoryItemsAtPoint(targetX, targetY);
                 if (items != null && items.size() > 0)
-                    ReflectionUtil.setPrivateField(target,
-                            ReflectionUtil.getField(target.getClass(), "itemList"), items);
+                    Utils.setField(target, "itemList", items);
             }
 
             if (sourceX != 0 && sourceY != 0) {
                 List<InventoryMetaItem> items = Utils.getInventoryItemsAtPoint(sourceX, sourceY);
                 if (items != null && items.size() > 0)
-                    ReflectionUtil.setPrivateField(source,
-                            ReflectionUtil.getField(source.getClass(), "itemList"), items);
+                    Utils.setField(source, "itemList", items);
             }
 
             if (combineTargets && (Math.abs(lastTargetCombineTime - System.currentTimeMillis()) > combineTimeout)) {
                 lastTargetCombineTime = System.currentTimeMillis();
-                List<InventoryMetaItem> targetItems = ReflectionUtil.getPrivateField(target,
-                        ReflectionUtil.getField(target.getClass(), "itemList"));
+                List<InventoryMetaItem> targetItems = Utils.getField(target, "itemList");
                 if (targetItems != null && targetItems.size() > 1) {
                     long[] targets = Utils.getItemIds(targetItems);
                     creationWindow.sendCombineAction(targets[0], targets, target);
@@ -167,8 +151,7 @@ public class CrafterBot extends Bot {
 
             if (combineSources && (Math.abs(lastSourceCombineTime - System.currentTimeMillis()) > combineTimeout)) {
                 lastSourceCombineTime = System.currentTimeMillis();
-                List<InventoryMetaItem> sourceItems = ReflectionUtil.getPrivateField(source,
-                        ReflectionUtil.getField(target.getClass(), "itemList"));
+                List<InventoryMetaItem> sourceItems = Utils.getField(source, "itemList");
                 if (sourceItems != null && sourceItems.size() > 1) {
                     long[] sources = Utils.getItemIds(sourceItems);
                     creationWindow.sendCombineAction(sources[0], sources, source);
@@ -222,8 +205,7 @@ public class CrafterBot extends Bot {
         try {
             int num = Integer.parseInt(input[0]);
             CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-            ReflectionUtil.setPrivateField(creationWindow,
-                    ReflectionUtil.getField(creationWindow.getClass(), "selectedActions"), num);
+            Utils.setField(creationWindow, "selectedActions", num);
         } catch (Exception e) {
             Utils.consolePrint("Can't set an action number");
         }
@@ -241,12 +223,10 @@ public class CrafterBot extends Bot {
             @SuppressWarnings("ConstantConditions")
             InventoryMetaItem sourceItem = allItems.stream().filter(item->item.getId() == id).findAny().get();
             CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-            CreationFrame source = ReflectionUtil.getPrivateField(creationWindow,
-                    ReflectionUtil.getField(creationWindow.getClass(), "source"));
+            CreationFrame source = Utils.getField(creationWindow, "source");
             List<InventoryMetaItem> newSourceList = new ArrayList<>();
             newSourceList.add(sourceItem);
-            ReflectionUtil.setPrivateField(source,
-                    ReflectionUtil.getField(source.getClass(), "itemList"), newSourceList);
+            Utils.setField(source, "itemList", newSourceList);
             Method requestCreationList = ReflectionUtil.getMethod(creationWindow.getClass(), "requestCreationList");
             requestCreationList.setAccessible(true);
             requestCreationList.invoke(creationWindow);

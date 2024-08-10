@@ -13,8 +13,6 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
-
 import com.wurmonline.client.game.inventory.InventoryMetaItem;
 import com.wurmonline.client.renderer.gui.CreationWindow;
 import com.wurmonline.client.renderer.gui.InventoryListComponent;
@@ -284,8 +282,7 @@ public class ArcheoBot extends Bot {
         }
         InventoryListComponent ilc;
         try {
-            ilc = ReflectionUtil.getPrivateField(inventoryComponent,
-                    ReflectionUtil.getField(inventoryComponent.getClass(), "component"));
+            ilc = Utils.getField(inventoryComponent, "component");
         } catch(Exception e) {
             Utils.consolePrint("Unable to get inventory information");
             return;
@@ -308,14 +305,14 @@ public class ArcheoBot extends Bot {
 
 	boolean waitActionStarted(Supplier<Boolean> failed) throws Exception {
 		CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow, ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
 		final long start = System.currentTimeMillis();
 		while(isActive()) {
 			if(failed != null && failed.get()) {
 				return false;
 			}
 
-			float progress = ReflectionUtil.getPrivateField(progressBar, ReflectionUtil.getField(progressBar.getClass(), "progress"));
+			float progress = Utils.getField(progressBar, "progress");
 			if(progress != 0f) {
 				return true;
 			}
@@ -332,9 +329,9 @@ public class ArcheoBot extends Bot {
 	
 	void waitActionFinished() throws Exception {
 		CreationWindow creationWindow = WurmHelper.hud.getCreationWindow();
-        Object progressBar = ReflectionUtil.getPrivateField(creationWindow, ReflectionUtil.getField(creationWindow.getClass(), "progressBar"));
+        Object progressBar = Utils.getField(creationWindow, "progressBar");
 		while(isActive()) {
-			float progress = ReflectionUtil.getPrivateField(progressBar, ReflectionUtil.getField(progressBar.getClass(), "progress"));
+			float progress = Utils.getField(progressBar, "progress");
 			if(progress == 0f) {
 				break;
 			}
