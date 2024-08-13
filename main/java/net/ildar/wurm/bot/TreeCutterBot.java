@@ -124,7 +124,7 @@ public class TreeCutterBot extends Bot{
                             else {
                                 Utils.consolePrint(
                                     "%s: Unable to find beehive items due to repeated ConcurrentModificationException",
-                                    TreeCutterBot.class.getName()
+                                    TreeCutterBot.class.getSimpleName()
                                 );
                                 beeItems = Collections.emptyMap();
                             }
