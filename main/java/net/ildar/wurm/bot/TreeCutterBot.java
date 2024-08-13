@@ -18,6 +18,8 @@ import net.ildar.wurm.annotations.BotInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -104,15 +106,30 @@ public class TreeCutterBot extends Bot{
                         continue;
 
                     Map<Long, GroundItemCellRenderable> beeItems = Utils.getField(sscc, "groundItems");
-                    beeItems = beeItems.entrySet().stream().filter(entry -> {
+                    for(int tries = 0; tries < 5; tries++) {
                         try {
-                            GroundItemData groundItemData = Utils.getField(entry.getValue(), "item");
-                            return groundItemData.getName().contains("hive");
-                        } catch (Exception e) {
-                            Utils.consolePrint(e.getMessage());
+                            beeItems = beeItems.entrySet().stream().filter(entry -> {
+                                try {
+                                    GroundItemData groundItemData = Utils.getField(entry.getValue(), "item");
+                                    return groundItemData.getName().contains("hive");
+                                } catch (Exception e) {
+                                    Utils.consolePrint(e.getMessage());
+                                }
+                                return false;
+                            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                            break;
+                        } catch(ConcurrentModificationException err) {
+                            if(tries < 4)
+                                continue;
+                            else {
+                                Utils.consolePrint(
+                                    "%s: Unable to find beehive items due to repeated ConcurrentModificationException",
+                                    TreeCutterBot.class.getName()
+                                );
+                                beeItems = Collections.emptyMap();
+                            }
                         }
-                        return false;
-                    }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    }
                     Tiles.Tile tileType = world.getNearTerrainBuffer().getTileType(checkedtiles[tileIndex][0], checkedtiles[tileIndex][1]);
                     byte tileData = world.getNearTerrainBuffer().getData(checkedtiles[tileIndex][0], checkedtiles[tileIndex][1]);
 
