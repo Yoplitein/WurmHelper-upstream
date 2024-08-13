@@ -329,6 +329,15 @@ class ItemSpec
     private void updateSource(int x, int y)
     {
         InventoryListComponent inv = Utils.getInventoryAtPoint(x, y);
+        if(inv == null) {
+            Utils.consolePrint(
+                "%s: couldn't find any inventories at programmed coordinates",
+                BulkItemGetterBot.class.getSimpleName()
+            );
+            source = null;
+            return;
+        }
+
         List<InventoryMetaItem> items = Utils.getInventoryItemsAtPoint(inv, x, y);
         
         if(items.size() == 0)
