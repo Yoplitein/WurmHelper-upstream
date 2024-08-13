@@ -2,6 +2,8 @@ package net.ildar.wurm.bot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.wurmonline.client.game.inventory.InventoryMetaItem;
 import com.wurmonline.client.options.Options;
@@ -18,6 +20,8 @@ import net.ildar.wurm.annotations.BotInfo;
         abbreviation = "big")
 public class BulkItemGetterBot extends Bot
 {
+    public static final Pattern quantityRegex = Pattern.compile("\\((\\d+)x\\)");
+
     public static boolean closeBMLWindow;
     public static int moveQuantity = -1;
     ArrayList<ItemSpec> specs = new ArrayList<>();
@@ -68,6 +72,23 @@ public class BulkItemGetterBot extends Bot
                     final int targetQuantity = spec.countTargetQuantity();
                     moveQuantity = spec.stockQuantity - targetQuantity;
                     if(moveQuantity <= 0) continue; // fully stocked
+
+                    int sourceQuantity = Integer.MAX_VALUE;
+                    try {
+                        Matcher matcher = quantityRegex.matcher(spec.source.getDisplayName());
+                        if(matcher.find())
+                            sourceQuantity = Integer.parseInt(matcher.group(1));
+                        else
+                            throw new IndexOutOfBoundsException();
+                    } catch(NumberFormatException | IndexOutOfBoundsException err) {
+                        Utils.consolePrint(
+                            "%s: couldn't determine quantity of bulk item \"%s\"",
+                            BulkItemGetterBot.class.getSimpleName(),
+                            spec.source.getDisplayName()
+                        );
+                    }
+                    if(moveQuantity > sourceQuantity)
+                        moveQuantity = sourceQuantity;
                 }
                 
                 closeBMLWindow = true;
