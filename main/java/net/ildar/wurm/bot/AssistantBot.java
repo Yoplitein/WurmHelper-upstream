@@ -115,6 +115,8 @@ public class AssistantBot extends Bot {
     private boolean notarget = false;
     private long lastNotarget = 0;
 
+    private InventoryListComponent lumpHeatingInventory;
+
     private boolean verbose = false;
 
     public AssistantBot() {
@@ -161,6 +163,7 @@ public class AssistantBot extends Bot {
         );
         registerInputHandler(AssistantBot.InputKey.paveclear, input -> paveClear());
         registerInputHandler(AssistantBot.InputKey.notarget, input -> toggleNotarget());
+        registerInputHandler(AssistantBot.InputKey.lumpheating, input -> toggleLumpHeating());
     }
 
     @Override
@@ -173,6 +176,9 @@ public class AssistantBot extends Bot {
         PlayerObj player = world.getPlayer();
         SimpleServerConnectionClass serverConnection = world.getServerConnection();
         final int maxActions = Utils.getMaxActionNumber();
+
+        HashSet<String> lumpTypesInInventory = new HashSet<>();
+        HashMap<Long, Long> lumpDropTimes = new HashMap<>();
         
         while (isActive()) {
             waitOnPause();
@@ -505,6 +511,42 @@ public class AssistantBot extends Bot {
                         lastNotarget = System.currentTimeMillis();
                         WurmHelper.hud.sendAction(PlayerAction.NO_TARGET, -10);
                     }
+                }
+
+                if(lumpHeatingInventory != null)
+                {
+                    InventoryListComponent playerInv = WurmHelper.hud.getInventoryWindow().getInventoryListComponent();
+                    InventoryMetaItem playerInvRoot = Utils.getRootItem(playerInv);
+                    final long playerInvId = playerInvRoot.getId();
+                    final long smelterId = Utils.getRootItem(lumpHeatingInventory).getId();
+                    
+                    lumpTypesInInventory.clear();
+                    for(InventoryMetaItem item: Utils.getInventoryItems("lump")) {
+                        if(item.getTemperature() != 5) {
+                            serverConnection.sendMoveSomeItems(smelterId, new long[]{item.getId()});
+                            lumpDropTimes.put(item.getId(), System.currentTimeMillis());
+                        } else {
+                            lumpTypesInInventory.add(item.getBaseName());
+                        }
+                    }
+
+                    final long now = System.currentTimeMillis();
+                    long[] hotLumps = Utils.getItemIds(Utils.getInventoryItems(
+                        lumpHeatingInventory,
+                        item -> {
+                            final String name = item.getBaseName();
+                            boolean shouldTake =
+                                name.contains("lump") &&
+                                !lumpTypesInInventory.contains(name) &&
+                                now - lumpDropTimes.getOrDefault(item.getId(), 0l) >= 60_000 &&
+                                item.getTemperature() == 5
+                            ;
+                            if(shouldTake)
+                                lumpTypesInInventory.add(name);
+                            return shouldTake;
+                        }
+                    ));
+                    serverConnection.sendMoveSomeItems(playerInvId, hotLumps);
                 }
             }
             sleep(timeout);
@@ -1174,6 +1216,30 @@ public class AssistantBot extends Bot {
             "no longer"
         );
     }
+
+    private void toggleLumpHeating() {
+        if(lumpHeatingInventory != null) {
+            lumpHeatingInventory = null;
+            Utils.consolePrint(
+                "%s will no longer keep lumps heated",
+                AssistantBot.class.getSimpleName()
+            );
+            return;
+        }
+
+        final int mouseX = WurmHelper.hud.getWorld().getClient().getXMouse();
+        final int mouseY = WurmHelper.hud.getWorld().getClient().getYMouse();
+        lumpHeatingInventory = Utils.getInventoryAtPoint(mouseX, mouseY);
+        if(lumpHeatingInventory == null) {
+            Utils.consolePrint("couldn't find any inventory under cursor");
+        } else {
+            Utils.consolePrint(
+                "%s will use %s to keep lumps heated",
+                AssistantBot.class.getSimpleName(),
+                Utils.getRootItem(lumpHeatingInventory).getDisplayName()
+            );
+        }
+    }
     
     private void toggleVerbosity() {
         verbose = !verbose;
@@ -1321,6 +1387,7 @@ public class AssistantBot extends Bot {
         pavec("Pave command for tile corners", "item name"),
         paveclear("Forget which items have already been used for paving", ""),
         notarget("Automatically clear targeted creature if it is too far away", ""),
+        lumpheating("Toggle automatic lump heating by swapping lumps into/out of hovered container", ""),
         ;
 
         private String description;
