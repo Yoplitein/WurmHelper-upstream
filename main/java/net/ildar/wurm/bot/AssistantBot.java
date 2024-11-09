@@ -117,6 +117,8 @@ public class AssistantBot extends Bot {
 
     private InventoryListComponent lumpHeatingInventory;
 
+    private boolean lumpCombining;
+
     private boolean verbose = false;
 
     public AssistantBot() {
@@ -164,6 +166,7 @@ public class AssistantBot extends Bot {
         registerInputHandler(AssistantBot.InputKey.paveclear, input -> paveClear());
         registerInputHandler(AssistantBot.InputKey.notarget, input -> toggleNotarget());
         registerInputHandler(AssistantBot.InputKey.lumpheating, input -> toggleLumpHeating());
+        registerInputHandler(AssistantBot.InputKey.lumpcombine, input -> toggleLumpCombining());
     }
 
     @Override
@@ -179,6 +182,8 @@ public class AssistantBot extends Bot {
 
         HashSet<String> lumpTypesInInventory = new HashSet<>();
         HashMap<Long, Long> lumpDropTimes = new HashMap<>();
+
+        HashMap<String, ArrayList<Long>> lumpsToCombine = new HashMap<>();
         
         while (isActive()) {
             waitOnPause();
@@ -513,8 +518,7 @@ public class AssistantBot extends Bot {
                     }
                 }
 
-                if(lumpHeatingInventory != null)
-                {
+                if(lumpHeatingInventory != null) {
                     InventoryListComponent playerInv = WurmHelper.hud.getInventoryWindow().getInventoryListComponent();
                     InventoryMetaItem playerInvRoot = Utils.getRootItem(playerInv);
                     final long playerInvId = playerInvRoot.getId();
@@ -537,7 +541,7 @@ public class AssistantBot extends Bot {
                             final String name = item.getBaseName();
                             boolean shouldTake =
                                 name.contains("lump") &&
-                                !lumpTypesInInventory.contains(name) &&
+                                (lumpCombining || !lumpTypesInInventory.contains(name)) &&
                                 now - lumpDropTimes.getOrDefault(item.getId(), 0l) >= 60_000 &&
                                 item.getTemperature() == 5
                             ;
@@ -547,6 +551,29 @@ public class AssistantBot extends Bot {
                         }
                     ));
                     serverConnection.sendMoveSomeItems(playerInvId, hotLumps);
+                }
+
+                if(lumpCombining) {
+                    lumpsToCombine.values().forEach(a -> a.clear());
+                    for(InventoryMetaItem lump: Utils.getInventoryItems("lump")) {
+                        if(lump.getTemperature() != 5)
+                            continue;
+
+                        ArrayList<Long> list = lumpsToCombine.get(lump.getBaseName());
+                        if(list == null)
+                            lumpsToCombine.put(lump.getBaseName(), list = new ArrayList<>());
+                        list.add(lump.getId());
+                    }
+
+                    lumpsToCombine.values().forEach(lumps -> {
+                        if(lumps.size() < 2)
+                            return;
+
+                        // utter Java moment
+                        // wtb slices, and generics that aren't lies to children
+                        long[] lumpIds = lumps.stream().mapToLong(Long::longValue).toArray();
+                        serverConnection.sendAction(lumpIds[0], lumpIds, PlayerAction.COMBINE);
+                    });
                 }
             }
             sleep(timeout);
@@ -1240,6 +1267,15 @@ public class AssistantBot extends Bot {
             );
         }
     }
+
+    private void toggleLumpCombining() {
+        lumpCombining ^= true;
+        Utils.consolePrint(
+            "%s will %scombine lumps",
+            AssistantBot.class.getSimpleName(),
+            lumpCombining ? "" : "no longer "
+        );
+    }
     
     private void toggleVerbosity() {
         verbose = !verbose;
@@ -1388,6 +1424,7 @@ public class AssistantBot extends Bot {
         paveclear("Forget which items have already been used for paving", ""),
         notarget("Automatically clear targeted creature if it is too far away", ""),
         lumpheating("Toggle automatic lump heating by swapping lumps into/out of hovered container", ""),
+        lumpcombine("Toggle automatic combining of (hot) lumps", ""),
         ;
 
         private String description;
